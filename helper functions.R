@@ -129,3 +129,61 @@ plot_occurrences_map <- function(data, species_name = NULL, max_year = NULL, max
     theme_minimal()
 }
 
+
+library(ggplot2)
+library(gganimate)
+library(gifski)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+library(dplyr)
+
+animate_occurrences_over_time <- function(data, species_name = NULL, filename = "species_animation.gif") {
+  # Filter valid lat/lon and date fields
+  map_data <- data %>%
+    filter(!is.na(decimalLatitude), !is.na(decimalLongitude), !is.na(year), !is.na(month)) %>%
+    mutate(
+      year = as.numeric(year),
+      month = as.numeric(month),
+      year_month = sprintf("%04d-%02d", year, month)
+    )
+  
+  # UK base map
+  uk <- ne_countries(scale = "medium", country = "United Kingdom", returnclass = "sf")
+  
+  # Animated plot with accumulating points
+  p <- ggplot() +
+    geom_sf(data = uk, fill = "grey90", colour = "black") +
+    geom_point(
+      data = map_data,
+      aes(x = decimalLongitude, y = decimalLatitude),
+      colour = "blue", alpha = 0.6, size = 1.5
+    ) +
+    coord_sf(xlim = c(-11, 2), ylim = c(49.5, 61), expand = FALSE) +
+    labs(
+      title = paste0("Spread of",
+                     if (!is.null(species_name)) paste0(" ", species_name),
+                     "\n{closest_state}"),
+      x = "Longitude", y = "Latitude"
+    ) +
+    theme_minimal() +
+    transition_states(
+      year_month,
+      transition_length = 2,
+      state_length = 1,
+      wrap = FALSE
+    ) +
+    shadow_mark(alpha = 0.3, size = 1.2) +  # <- accumulate previous points
+    ease_aes('linear')
+  
+  # Animate and save
+  anim <- animate(p, renderer = gifski_renderer(), width = 800, height = 600)
+  anim_save(filename, animation = anim)
+  
+  cat("✅ Animation saved as:", filename, "\n")
+}
+
+
+animate_occurrences_over_time(test, species_name = "Magallana gigas")
+
+
