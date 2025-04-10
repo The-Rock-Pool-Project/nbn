@@ -130,35 +130,44 @@ plot_occurrences_map <- function(data, species_name = NULL, max_year = NULL, max
 }
 
 
-library(ggplot2)
-library(gganimate)
-library(gifski)
-library(rnaturalearth)
-library(rnaturalearthdata)
-library(sf)
-library(dplyr)
-
-animate_occurrences_over_time <- function(data, species_name = NULL, filename = "species_animation.gif") {
-  # Filter valid lat/lon and date fields
+animate_occurrences_over_time <- function(data, species_name = NULL, filename = "species_animation.gif", speed = 0.5) {
+  
+  library(ggplot2)
+  library(gganimate)
+  library(gifski)
+  library(rnaturalearth)
+  library(rnaturalearthdata)
+  library(sf)
+  library(dplyr)
+  
+  # Filter valid lat/lon and year fields
   map_data <- data %>%
-    filter(!is.na(decimalLatitude), !is.na(decimalLongitude), !is.na(year), !is.na(month)) %>%
-    mutate(
-      year = as.numeric(year),
-      month = as.numeric(month),
-      year_month = sprintf("%04d-%02d", year, month)
-    )
+    filter(!is.na(decimalLatitude), !is.na(decimalLongitude), !is.na(year)) %>%
+    mutate(year = as.numeric(year))
   
   # UK base map
   uk <- ne_countries(scale = "medium", country = "United Kingdom", returnclass = "sf")
   
-  # Animated plot with accumulating points
+  # Adjust speed scaling (lower = slower)
+  base_transition <- 2
+  base_state <- 1
+  transition_len <- base_transition / speed
+  state_len <- base_state / speed
+  
+  # Create the plot
   p <- ggplot() +
     geom_sf(data = uk, fill = "grey90", colour = "black") +
+    
+    # Past points (faded)
+    shadow_mark(alpha = 0.3, size = 1.8, colour = "grey30") +
+    
+    # New points (highlighted)
     geom_point(
       data = map_data,
       aes(x = decimalLongitude, y = decimalLatitude),
-      colour = "blue", alpha = 0.6, size = 1.5
+      colour = "dodgerblue3", alpha = 0.9, size = 2.8
     ) +
+    
     coord_sf(xlim = c(-11, 2), ylim = c(49.5, 61), expand = FALSE) +
     labs(
       title = paste0("Spread of",
@@ -167,13 +176,14 @@ animate_occurrences_over_time <- function(data, species_name = NULL, filename = 
       x = "Longitude", y = "Latitude"
     ) +
     theme_minimal() +
+    
+    # Animate by year
     transition_states(
-      year_month,
-      transition_length = 2,
-      state_length = 1,
+      states = year,
+      transition_length = transition_len,
+      state_length = state_len,
       wrap = FALSE
     ) +
-    shadow_mark(alpha = 0.3, size = 1.2) +  # <- accumulate previous points
     ease_aes('linear')
   
   # Animate and save
@@ -182,8 +192,3 @@ animate_occurrences_over_time <- function(data, species_name = NULL, filename = 
   
   cat("✅ Animation saved as:", filename, "\n")
 }
-
-
-animate_occurrences_over_time(test, species_name = "Magallana gigas")
-
-
