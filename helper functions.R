@@ -8,9 +8,6 @@ require(jsonlite)
 require(stringdist)
 require(dplyr)
 
-# Define species name
-species_name <- "Magallana gigas"
-
 # Step 1: Find the best match GUID
 search_url <- paste0("https://species-ws.nbnatlas.org/search?q=", URLencode(species_name))
 search_response <- GET(search_url)
@@ -78,117 +75,215 @@ return(occurrences_df)
 }
 
 
-plot_occurrences_map <- function(data, species_name = NULL, max_year = NULL, max_month = NULL) {
-
-  require(ggplot2)
-  require(rnaturalearth)
-  require(rnaturalearthdata)
-  require(sf)
+plot_occurrences_map <- function(
+    data,
+    species_name = NULL,
+    max_year = NULL,
+    max_month = NULL,
+    point_colour = "#2176FF",
+    point_size = 2.8,
+    background_colour = "#FFFFFF",
+    basemap_colour = "#D7D7E6",
+    show_caption = TRUE,
+    caption_text = "Data from NBN Atlas",
+    caption_bg = "#191D2D",
+    caption_col = "#FFFFFF"
+) {
+  # Load required packages
+  library(ggplot2)
+  library(rnaturalearth)
+  library(sf)
+  library(dplyr)
+  library(showtext)
+  library(cowplot)
+  library(ggtext)
   
+  font_add_google("Montserrat", "mont")
+  showtext_auto()
   
-    # Filter valid coordinates
-  map_data <- data[!is.na(data$decimalLatitude) & !is.na(data$decimalLongitude), ]
+  # Filter and prep data
+  map_data <- data %>%
+    filter(!is.na(decimalLatitude), !is.na(decimalLongitude), !is.na(year), !is.na(month)) %>%
+    mutate(year = as.numeric(year), month = as.numeric(month)) %>%
+    mutate(year_month = year * 100 + month)
   
-  # Ensure year and month exist and are numeric
-  if (!is.null(max_year) && !is.null(max_month) &&
-      "year" %in% names(map_data) && "month" %in% names(map_data)) {
-    
-    # Convert year and month to numeric
-    map_data$year <- suppressWarnings(as.numeric(map_data$year))
-    map_data$month <- suppressWarnings(as.numeric(map_data$month))
-    
-    # Create comparable YYYYMM value
-    map_data <- map_data[!is.na(map_data$year) & !is.na(map_data$month), ]
-    map_data$year_month <- map_data$year * 100 + map_data$month
-    
-    # Construct target YYYYMM
-    max_year_month <- as.numeric(paste0(max_year, sprintf("%02d", max_month)))
-    
-    # Filter
-    map_data <- subset(map_data, year_month <= max_year_month)
+  if (!is.null(max_year) && !is.null(max_month)) {
+    max_val <- max_year * 100 + max_month
+    map_data <- map_data %>% filter(year_month <= max_val)
   }
   
   # Load UK base map
   uk <- ne_countries(scale = "medium", country = "United Kingdom", returnclass = "sf")
   
-  # Create the map
-  ggplot() +
-    geom_sf(data = uk, fill = "grey90", colour = "black") +
+  # Format subtitle (date)
+  subtitle_text <- if (!is.null(max_year) && !is.null(max_month)) {
+    formatted_date <- format(as.Date(paste0(max_year, "-", max_month, "-01")), "%b %Y")
+    paste0("Occurrences up to ", formatted_date)
+  } else {
+    NULL
+  }
+  
+  # Format italic species name
+  title_text <- if (!is.null(species_name)) {
+    paste0("<i>", paste(strsplit(species_name, " ")[[1]], collapse = " "), "</i>")
+  } else {
+    ""
+  }
+  
+  # Base plot
+  base_plot <- ggplot() +
+    geom_sf(data = uk, fill = basemap_colour, colour = "black") +
     geom_point(
       data = map_data,
       aes(x = decimalLongitude, y = decimalLatitude),
-      colour = "blue", alpha = 0.6, size = 1.5
+      colour = point_colour, alpha = 0.9, size = point_size
     ) +
-    coord_sf(xlim = c(-11, 2), ylim = c(49.5, 61), expand = FALSE) +
+    coord_sf(xlim = c(-9, 2), ylim = c(49.5, 61), expand = FALSE) +
     labs(
-      title = paste0("Occurrences",
-                     if (!is.null(species_name)) paste0(" of ", species_name) else "",
-                     if (!is.null(max_year)) paste0(" up to ", max_year, "-", sprintf("%02d", max_month)) else ""),
-      x = "Longitude", y = "Latitude"
+      title = title_text,
+      subtitle = subtitle_text,
+      x = NULL, y = NULL
     ) +
-    theme_minimal()
+    theme_minimal(base_size = 14, base_family = "mont") +
+    theme(
+      plot.title.position = "plot",
+      plot.title = ggtext::element_textbox_simple(
+        halign = 0.5,
+        size = 16,
+        padding = margin(0, 0, 0, 0),
+        margin = margin(b = 6)
+      ),
+      ,
+      plot.subtitle = element_text(hjust = 0.5, size = 13, family = "mont"),
+      axis.title = element_blank(),
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      panel.grid = element_blank(),
+      plot.background = element_rect(fill = background_colour, colour = NA),
+      plot.margin = margin(10, 20, 20, 20)
+    )
+  
+  # Assign plot
+  plot_with_logo <- base_plot
+  
+  # Add footer caption (optional)
+  if (show_caption) {
+    full_plot <- cowplot::plot_grid(
+      plot_with_logo,
+      cowplot::ggdraw() +
+        cowplot::draw_label(
+          caption_text,
+          fontfamily = "mont",
+          fontface = "plain",
+          size = 11,
+          x = 0.5, hjust = 0.5,
+          colour = caption_col
+        ) +
+        theme(plot.background = element_rect(fill = caption_bg, colour = NA)),
+      ncol = 1,
+      rel_heights = c(1, 0.05)
+    )
+  } else {
+    full_plot <- plot_with_logo
+  }
+  
+  return(full_plot)
 }
 
 
-animate_occurrences_over_time <- function(data, species_name = NULL, filename = "species_animation.gif", speed = 0.5) {
+
+
+animate_occurrences_over_time <- function(
+    data,
+    species_name = NULL,
+    filename = "species_animation.gif",
+    speed = 1,
+    point_colour = "dodgerblue3",
+    point_size = 2.8,
+    old_point_colour = "grey30"
+) {
+  require(ggplot2)
+  require(gganimate)
+  require(gifski)
+  require(rnaturalearth)
+  require(rnaturalearthdata)
+  require(sf)
+  require(dplyr)
   
-  library(ggplot2)
-  library(gganimate)
-  library(gifski)
-  library(rnaturalearth)
-  library(rnaturalearthdata)
-  library(sf)
-  library(dplyr)
-  
-  # Filter valid lat/lon and year fields
+  # Filter and prepare data
   map_data <- data %>%
     filter(!is.na(decimalLatitude), !is.na(decimalLongitude), !is.na(year)) %>%
-    mutate(year = as.numeric(year))
+    mutate(year = as.numeric(year)) %>%
+    arrange(year) %>%
+    mutate(point_id = row_number())
   
-  # UK base map
-  uk <- ne_countries(scale = "medium", country = "United Kingdom", returnclass = "sf")
+  # Load UK map
+  uk <- rnaturalearth::ne_countries(scale = "medium", country = "United Kingdom", returnclass = "sf")
   
-  # Adjust speed scaling (lower = slower)
-  base_transition <- 2
-  base_state <- 1
-  transition_len <- base_transition / speed
-  state_len <- base_state / speed
+  # Compute running total
+  frame_data <- map_data %>%
+    count(year, name = "records") %>%
+    arrange(year) %>%
+    mutate(
+      running_total = cumsum(records),
+      frame_label = paste0("Year: ", year, "   •   Total records: ", running_total)
+    )
   
-  # Create the plot
+  # Join frame label back to map_data
+  map_data <- left_join(map_data, frame_data[, c("year", "frame_label")], by = "year")
+  
+  # Plot
   p <- ggplot() +
     geom_sf(data = uk, fill = "grey90", colour = "black") +
-    
-    # Past points (faded)
-    shadow_mark(alpha = 0.3, size = 1.8, colour = "grey30") +
-    
-    # New points (highlighted)
+    shadow_mark(alpha = 0.3, size = point_size * 0.7, colour = old_point_colour) +
     geom_point(
       data = map_data,
-      aes(x = decimalLongitude, y = decimalLatitude),
-      colour = "dodgerblue3", alpha = 0.9, size = 2.8
+      aes(x = decimalLongitude, y = decimalLatitude, group = point_id),
+      colour = point_colour, alpha = 0.9, size = point_size
     ) +
-    
     coord_sf(xlim = c(-11, 2), ylim = c(49.5, 61), expand = FALSE) +
     labs(
-      title = paste0("Spread of",
-                     if (!is.null(species_name)) paste0(" ", species_name),
-                     "\n{closest_state}"),
+      title = paste0("Spread of", if (!is.null(species_name)) paste0(" ", species_name)),
+      subtitle = "{closest_state}",
       x = "Longitude", y = "Latitude"
     ) +
-    theme_minimal() +
+    theme_minimal(base_size = 14, base_family = "mont") +
+    theme(
+      axis.title = element_blank(),         # ❌ remove axis titles
+      axis.text = element_text(size = 10),  # optionally keep or tweak tick labels
+      plot.margin = margin(20, 20, 40, 20)  # top, right, bottom, left
+    )  +
     
-    # Animate by year
-    transition_states(
-      states = year,
-      transition_length = transition_len,
-      state_length = state_len,
-      wrap = FALSE
-    ) +
+    # ✅ This now works correctly
+    transition_states(states = frame_label, transition_length = 1, state_length = 2) +
     ease_aes('linear')
   
-  # Animate and save
-  anim <- animate(p, renderer = gifski_renderer(), width = 800, height = 600)
+  # Animation settings
+  nframes <- length(unique(map_data$frame_label)) * 10
+  fps <- 10 * speed
+  
+  # Create and save animation
+  anim <- animate(p, renderer = gifski_renderer(), width = 900, height = 700, fps = fps, nframes = nframes)
   anim_save(filename, animation = anim)
   
-  cat("✅ Animation saved as:", filename, "\n")
+  # Optional: Add logo
+  if (file.exists("rock_pool_logo.png")) {
+    gif <- magick::image_read(filename)
+    logo <- magick::image_read("rock_pool_logo.png") %>%
+      magick::image_scale("150")  # adjust as needed
+    
+    gif_with_logo <- magick::image_apply(gif, function(frame) {
+      magick::image_composite(frame, logo, offset = "+730+500")
+    })
+    
+    magick::image_write(gif_with_logo, path = filename)
+    cat("✅ Logo added to animation\n")
+  } else {
+    cat("⚠️ Logo file not found: 'rock_pool_logo.png'\n")
+  }
+  
+  
+  cat("✅ Animation saved as:", filename, "with speed =", speed, "\n")
 }
+
+
