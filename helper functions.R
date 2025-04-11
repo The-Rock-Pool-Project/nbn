@@ -64,11 +64,14 @@ if (length(results) > 0) {
     cat("✅ Total records retrieved:", nrow(occurrences_df), "\n")
   } else {
     cat("⚠️ No occurrence records found for", matched_name, "\n")
+    return()
   }
   
 } else {
   cat("❌ No species found for search term:", species_name, "\n")
-}
+  return()
+  }
+
 
 return(occurrences_df)
 
@@ -197,18 +200,23 @@ animate_occurrences_over_time <- function(
     data,
     species_name = NULL,
     filename = "species_animation.gif",
+    format = "gif",  # "gif" or "mp4"
     speed = 1,
     point_colour = "dodgerblue3",
     point_size = 2.8,
-    old_point_colour = "grey30"
+    old_point_colour = "grey30",
+    pause_at_end = TRUE
 ) {
   require(ggplot2)
   require(gganimate)
   require(gifski)
+  require(av)
   require(rnaturalearth)
   require(rnaturalearthdata)
   require(sf)
   require(dplyr)
+  require(magick)
+  require(stringr)
   
   # Filter and prepare data
   map_data <- data %>%
@@ -232,7 +240,18 @@ animate_occurrences_over_time <- function(
   # Join frame label back to map_data
   map_data <- left_join(map_data, frame_data[, c("year", "frame_label")], by = "year")
   
-  # Plot
+  # If pausing at end, repeat final year state a few times
+  if (pause_at_end) {
+    final_label <- tail(unique(map_data$frame_label), 1)
+    pause_frames <- rep(final_label, 10)  # 10 extra frames
+    map_data <- bind_rows(
+      map_data,
+      map_data %>% filter(frame_label == final_label) %>% slice(rep(1:n(), 10))
+    )
+  }
+  
+  
+  # Build plot
   p <- ggplot() +
     geom_sf(data = uk, fill = "grey90", colour = "black") +
     shadow_mark(alpha = 0.3, size = point_size * 0.7, colour = old_point_colour) +
@@ -249,12 +268,10 @@ animate_occurrences_over_time <- function(
     ) +
     theme_minimal(base_size = 14, base_family = "mont") +
     theme(
-      axis.title = element_blank(),         # ❌ remove axis titles
-      axis.text = element_text(size = 10),  # optionally keep or tweak tick labels
-      plot.margin = margin(20, 20, 40, 20)  # top, right, bottom, left
-    )  +
-    
-    # ✅ This now works correctly
+      axis.title = element_blank(),
+      axis.text = element_text(size = 10),
+      plot.margin = margin(20, 20, 40, 20)
+    ) +
     transition_states(states = frame_label, transition_length = 1, state_length = 2) +
     ease_aes('linear')
   
@@ -262,28 +279,36 @@ animate_occurrences_over_time <- function(
   nframes <- length(unique(map_data$frame_label)) * 10
   fps <- 10 * speed
   
-  # Create and save animation
-  anim <- animate(p, renderer = gifski_renderer(), width = 900, height = 700, fps = fps, nframes = nframes)
-  anim_save(filename, animation = anim)
+  # Auto filename fix
+  filename <- str_replace(filename, "\\.gif$|\\.mp4$", paste0(".", format))
   
-  # Optional: Add logo
-  if (file.exists("rock_pool_logo.png")) {
-    gif <- magick::image_read(filename)
-    logo <- magick::image_read("rock_pool_logo.png") %>%
-      magick::image_scale("150")  # adjust as needed
+  # Choose renderer
+  renderer <- if (format == "mp4") av_renderer(filename) else gifski_renderer()
+  
+  # Animate
+  anim <- animate(p, renderer = renderer, width = 900, height = 700, fps = fps, nframes = nframes)
+  
+  # Save manually for GIF (to allow post-edit)
+  if (format == "gif") {
+    anim_save(filename, animation = anim)
     
-    gif_with_logo <- magick::image_apply(gif, function(frame) {
-      magick::image_composite(frame, logo, offset = "+730+500")
-    })
-    
-    magick::image_write(gif_with_logo, path = filename)
-    cat("✅ Logo added to animation\n")
-  } else {
-    cat("⚠️ Logo file not found: 'rock_pool_logo.png'\n")
+    # Optional: Add logo for GIF
+    if (file.exists("rock_pool_logo.png")) {
+      gif <- magick::image_read(filename)
+      logo <- magick::image_read("rock_pool_logo.png") %>%
+        magick::image_scale("150")
+      gif_with_logo <- magick::image_apply(gif, function(frame) {
+        magick::image_composite(frame, logo, offset = "+730+500")
+      })
+      magick::image_write(gif_with_logo, path = filename)
+      cat("✅ Logo added to animation\n")
+    } else {
+      cat("⚠️ Logo file not found: 'rock_pool_logo.png'\n")
+    }
   }
-  
   
   cat("✅ Animation saved as:", filename, "with speed =", speed, "\n")
 }
+
 
 
