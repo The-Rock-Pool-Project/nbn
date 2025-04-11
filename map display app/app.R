@@ -61,7 +61,7 @@ ui <- dashboardPage(
       box(
         width = 12, status = "primary", solidHeader = TRUE,
         title = "Map View",
-        div(class = "map-img", imageOutput("map_output", height = "auto"))
+        div(class = "map-img", uiOutput("map_output"))
       )
     )
   )
@@ -70,6 +70,11 @@ ui <- dashboardPage(
 )
 
 server <- function(input, output, session) {
+  
+  
+  addResourcePath("static_maps", "outputs/static")
+  addResourcePath("animated_maps", "outputs/animated")
+  
   
   get_static_path <- reactive({
     file.path("outputs/static", paste0(input$species, ".png"))
@@ -80,13 +85,29 @@ server <- function(input, output, session) {
   })
   
   # Dynamic map display
-  output$map_output <- renderImage({
+  output$map_output <- renderUI({
+    req(input$species)
+    file_base <- input$species
+    
     if (input$map_type == "static") {
-      list(src = file.path("outputs/static", paste0(input$species, ".png")), contentType = 'image/png', width = "100%")
+      static_url <- file.path("static_maps", paste0(file_base, ".png"))
+      tags$img(src = static_url, width = "100%",
+               style = "border: 1px solid #ccc; border-radius: 6px;")
     } else {
-      list(src = file.path("outputs/animated", paste0(input$species, ".gif")), contentType = 'image/gif', width = "100%")
+      mp4_url <- file.path("animated_maps", paste0(file_base, ".mp4"))
+      tags$video(
+        src = mp4_url,
+        type = "video/mp4",
+        width = "100%",
+        height = "500px",
+        controls = NA,
+        autoplay = NA,
+        loop = NA,
+        style = "border: 1px solid #ccc; border-radius: 6px;"
+      )
     }
-  }, deleteFile = FALSE)
+  })
+  
   
   output$download_static <- downloadHandler(
     filename = function() paste0(input$species, "_static_map.png"),
