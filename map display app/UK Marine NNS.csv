@@ -1,52 +1,46 @@
-Taxon_name,Common_name
-Agarophyton vermiculophyllum,Red alga (wart weed)
-Ammothea hilgendorfi,Japanese sea spider
-Amphibalanus amphitrite,Striped barnacle
-Amphibalanus reticulatus,Reticulated barnacle
-Arcuatula senhousia,Asian date mussel
-Asparagopsis armata,Harpoon weed
-Asterias amurensis ,Northern Pacific seastar
-Asterocarpa humilis,Compass sea squirt
-Austrominius modestus,Darwin's barnacle
-Bispira polyomma,Purple fan worm
-Bonnemaisonia hamifera,Hook weed
-Botrylloides diegensis,San diego Sea squirt
-Botrylloides violaceus,Orange cloak sea squirt
-Botryocladia wrightii,Golden membrane weed
-Bugula neritina,Ruby bryzoan
-Callinectes sapidus,Atlantic blue crab
-Caprella mutica,Japanese skeleton shrimp
-Caulacanthus okamurae,Pom pom weed
-Caulerpa racemosa,Sea grapes
-Caulerpa taxifolia,Killer algae
-Celtodoryx ciocalyptoides,Cauliflower sponge
-Cephalothrix simula,Pacific death worm
-Ciona savignyi,Pacific transparent sea squirt
-Codium fragile,Green sea fingers
-Colpomenia peregrina,Oyster thief
-Corella eumyota,Orange tipped seasquirt
-Crepidula fornicata,Slipper limpet
-Diadumene lineata,Orange striped anemone
-Didemnum vexillum,Carpet seasquirt
-Dyspanopeus sayi,Mud crab
-Ensis leei,Atlantic jacknife clam
-Eriocheir sinensis,Chinese mitten crab
-Ficopomatus enigmaticus,Trumpet tube worm
-Grateloupia turuturu,Devils tongue weed
-Hemigrapsus sanguineus,Asian shore crab
-Hemigrapsus takanoi,Brush clawed crab
-Hesperibalanus fallax,Small barnacle
-Hydroides ezoensis,Twin keel worm
-Magallana gigas,Pacific oyster
-Megabalanus coccopoma,Titan barnacle
-Megabalanus zebra,
-Ocinebrellus inornatus,Japanese oyster drill
-Perophora japonica,Creeping sea squirt
-Pseudodiaptomus marinus,Marine copepod
-Sargassum muticum,Wireweed
-Schizoporella japonica,Orange ripple bryzoan
-Styela clava,Leathery sea squirt
-Tricellaria inopinata,Tufty buff bryzoan
-Undaria pinnatifida,Wakame
-Urosalpinx cinerea,American oyster drill
-Watersipora subatra,Red ripple bryozoan
+Taxon_name,Common_name,CW_comments,NEW_COMMENTS,MBA_guide,Comments
+Agarophyton vermiculophyllum,Red alga (wart weed),"Name now changed back to Gracilaria vermiculophylla.                                                                       Can really only be confirmed by DNA analysis. But if you find a loose straggly seaweed on muddy estuarine shores and you have a seaweed expert to hand -it is worth trying to confirm, as it is spreading in the SW (found at Kingsbridge recently). ",,,UK Marine Strategy NIS monitoring list 2020
+Ammothea hilgendorfi,Japanese sea spider,Needs a very good photo showing stripy legs. Swe have a few records from Plymouth area. ,,Y,
+Amphibalanus amphitrite,Striped barnacle,Most likely confused with Perforatus perforatus. We haven't found it on shores in the SW.,,Y,UK Marine Strategy NIS monitoring list 2020
+Arcuatula senhousia,Asian date mussel,Small mussel with distinctive shiny green tinge. Currently only known from Solent. Muddy shores.,,Y,UK Marine Strategy NIS monitoring list 2020
+Asparagopsis armata,Harpoon weed,Yes - I presume you are familiar with this one.,,Y,UK Marine Strategy NIS monitoring list 2020
+Asterias amurensis ,Northern Pacific seastar,Horizon but good to keep on list.,"Do not validate any records, specimen would require examination by NHM, and specimen sent to NHM.",,Horizon species - UK Marine Strategy NIS monitoring list 2020
+Asterocarpa humilis,Compass sea squirt,Quite likely. I photo of open siphons would be ideal but they can be reluctant to open up. ,,Y,UK Marine Strategy NIS monitoring list 2020
+Austrominius modestus,Darwin's barnacle,Yes - I presume you are familiar with this one.,,Y,
+Bispira polyomma,Purple fan worm,Do you need ID info for this one?,Check with JB before validation.,Y,Newly found in 2023/4 marina surveys-  not yet rocky shores but would be interesting to find in these habitats
+Bonnemaisonia hamifera,Hook weed,Yes - I presume you are familiar with this one.,,Y,UK Marine Strategy NIS monitoring list 2020
+Botrylloides diegensis,San diego Sea squirt,"Only record if distinct colour forms seen, see guide. ",,Y,
+Botrylloides violaceus,Orange cloak sea squirt,"Only if you see larvae. Try leaving some in a bucket while you continue to survey, the large larvae may then be seen swimming around. You may also be able to see them (pink) with wrapped tail in the colony with a good hand lens.",,Y,
+Botryocladia wrightii,Golden membrane weed,Only known from Falmouth in SW. (was Chrysymenia wrightii),,Y,UK Marine Strategy NIS monitoring list 2020
+Bugula neritina,Ruby bryzoan,Yes - I presume you are familiar with this one.,,Y,
+Callinectes sapidus,Atlantic blue crab,Yes - keep an eye out.,Inform CW of any records.,,Current species of interest - unlikely but first dead specimen was found in Brighton rockpool in Summer 2024
+Caprella mutica,Japanese skeleton shrimp,Large red skeleton shrimp - good photo of body segments needed. Often on Sargassum.,,Y,UK Marine Strategy NIS monitoring list 2020
+Caulacanthus okamurae,Pom pom weed,Yes - I presume you are familiar with this one.,,Y,UK Marine Strategy NIS monitoring list 2020
+Celtodoryx ciocalyptoides,Cauliflower sponge,Horizon but good to keep on list.,"Do not validate any records, specimen would require examination by JB/CW, and specimen sent to NHM.",Y,UK Marine Strategy NIS monitoring list 2020
+Codium fragile,Green sea fingers,Needs a squash prep and microscope to distinguish from native subspecies. Might be possible with hand lens.,,Y,
+Colpomenia peregrina,Oyster thief,Yes - I presume you are familiar with this one.,,Y,
+Corella eumyota,Orange tipped seasquirt,Yes - I presume you are familiar with this one.,,Y,UK Marine Strategy NIS monitoring list 2020
+Crepidula fornicata,Slipper limpet,Yes - I presume you are familiar with this one.,,Y,UK Marine Strategy NIS monitoring list 2020
+Diadumene lineata,Orange striped anemone,"Good photo with stripes needed. Well established especially in low salinity areas, in Falmouth and Plymouth.",,Y,UK Marine Strategy NIS monitoring list 2020
+Didemnum vexillum,Carpet seasquirt,"Tricky to ID, try to photo water channels. Also check for leathery peelability.","Do not validate, send sample to JB/CW",Y,UK Marine Strategy NIS monitoring list 2020
+Dyspanopeus sayi,Mud crab,Horizon but good to keep on list.,"Do not validate any records, specimen would require examination by NHM, and specimen sent to NHM.",,Horizon species - UK Marine Strategy NIS monitoring list 2020
+Ensis leei,Atlantic jacknife clam,"I have got a new ID guide for Ensis, see attached. Dead shell found in Cornwall.",,Y,UK Marine Strategy NIS monitoring list 2020
+Eriocheir sinensis,Chinese mitten crab,"Not known from area, but easily spooted so keep.",,Y,UK Marine Strategy NIS monitoring list 2020
+Ficopomatus enigmaticus,Trumpet tube worm,Yes. But photo of trumpet tubes.  ,,Y,UK Marine Strategy NIS monitoring list 2020
+Grateloupia turuturu,Devils tongue weed,Yes - I presume you are familiar with this one.,,Y,UK Marine Strategy NIS monitoring list 2020
+Hemigrapsus sanguineus,Asian shore crab,"Yes, photo pincers to show features, also spots and banded legs and ‘stridulation ridge', runs horizontally below eye. ","Do not validate any records, specimen would require examination by CW/JB, and specimen sent to NHM.",Y,UK Marine Strategy NIS monitoring list 2020
+Hemigrapsus takanoi,Brush clawed crab,"Yes, photo pincers to show features, also spots and banded legs and ‘stridulation ridge', runs horizontally below eye. ",,Y,UK Marine Strategy NIS monitoring list 2020
+Hesperibalanus fallax,Small barnacle,Often on plastic & twine. ,,Y,UK Marine Strategy NIS monitoring list 2020
+Hydroides ezoensis,Twin keel worm,Likely confused with H. norvegica. Check for paired ridges.,Maybe check with JB before validation.,Y,
+Magallana gigas,Pacific oyster,Yes - I presume you are familiar with this one.,,Y,UK Marine Strategy NIS monitoring list 2020
+Megabalanus coccopoma,Titan barnacle,Horizon but good to keep on list.,"Do not validate any records, specimen would require examination by CW/JB, and specimen sent to NHM.",,Horizon species - UK Marine Strategy NIS monitoring list 2020
+Ocinebrellus inornatus,Japanese oyster drill,Horizon but good to keep on list.,"Do not validate any records, specimen would require examination by Cochological Society, and specimen sent to NHM.",,Horizon species - UK Marine Strategy NIS monitoring list 2020
+Perophora japonica,Creeping sea squirt,Look for distinct bright yellow star-like buds and stolons.,,Y,
+Pseudodiaptomus marinus,Marine copepod,Yes - I presume you are familiar with this one.,,,UK Marine Strategy NIS monitoring list 2020
+Sargassum muticum,Wireweed,Yes - I presume you are familiar with this one.,,Y,UK Marine Strategy NIS monitoring list 2020
+Schizoporella japonica,Orange ripple bryzoan,"Common on shores in Scotland, but not known from shores elsewhere.",Check with JB before validation.,Y,UK Marine Strategy NIS monitoring list 2020
+Styela clava,Leathery sea squirt,Yes - I presume you are familiar with this one.,,Y,UK Marine Strategy NIS monitoring list 2020
+Tricellaria inopinata,Tufty buff bryzoan,"Very common, but ID can't be confirmed without a microscope. There are Bugulina species and Scrupocellaria that look the same with the naked eye.",,Y,
+Undaria pinnatifida,Wakame,Yes - I presume you are familiar with this one.,,Y,UK Marine Strategy NIS monitoring list 2020
+Urosalpinx cinerea,American oyster drill,Not known from area. Needs expert confirmation from conchologist.,"Do not validate any records, specimen would require examination by Cochological Society, and specimen sent to NHM.",Y,UK Marine Strategy NIS monitoring list 2020
+Watersipora subatra,Red ripple bryozoan,Yes - I presume you are familiar with this one.,,Y,UK Marine Strategy NIS monitoring list 2020
