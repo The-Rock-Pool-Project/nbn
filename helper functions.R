@@ -198,7 +198,6 @@ plot_occurrences_map <- function(
 animate_occurrences_over_time <- function(
     data,
     species_name = NULL,
-    filename = "species_animation",
     format = "mp4",  # "gif" or "mp4"
     speed = 1,
     point_colour = "dodgerblue3",
@@ -267,17 +266,17 @@ animate_occurrences_over_time <- function(
     ) +
     theme_minimal(base_size = 14, base_family = "mont") +
     theme(
-      plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
-      plot.subtitle = element_text(size = 18, hjust = 0.5),
+      plot.title = element_text(size = 30, hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(size = 28, hjust = 0.5),
       axis.text = element_text(size = 10),
       plot.title.position = "plot",
-      plot.caption = element_text(hjust = 0.5, size = 12, margin = margin(t = 10))
+      plot.caption = element_text(hjust = 0.5, size = 20, margin = margin(t = 10))
     ) +
     labs(caption = "Data source: NBN Atlas") +
-    transition_states(states = frame_label, transition_length = 1, state_length = 2) +
+    transition_states(states = frame_label, transition_length = 0, state_length = 1) +
     view_follow(fixed_x = TRUE, fixed_y = TRUE)
   
-  animate(p1, renderer = av_renderer(anim1_path), width = 900, height = 1400, fps = 2 * speed, res = 200)
+  animate(p1, renderer = av_renderer(anim1_path), width = 900, height = 1400, fps = 4 * speed, res = 300)
   
   # Create final map frame
   final_data <- map_data
@@ -302,17 +301,17 @@ animate_occurrences_over_time <- function(
     ) +
     theme_minimal(base_size = 14, base_family = "mont") +
     theme(
-      plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
-      plot.subtitle = element_text(size = 18, hjust = 0.5),
+      plot.title = element_text(size = 30, hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(size = 28, hjust = 0.5),
       axis.text = element_text(size = 10),
       plot.title.position = "plot",
-      plot.caption = element_text(hjust = 0.5, size = 12, margin = margin(t = 10))
+      plot.caption = element_text(hjust = 0.5, size = 20, margin = margin(t = 10))
     ) +
     labs(caption = "Data source: NBN Atlas") +
     transition_states(states = frame_label, transition_length = 0, state_length = 20) +  # <-- longer pause
     view_follow(fixed_x = TRUE, fixed_y = TRUE)
   
-  animate(p2, renderer = av_renderer(anim2_path), width = 900, height = 1400, fps = 5 * speed, res = 200, nframes = 10)
+  animate(p2, renderer = av_renderer(anim2_path), width = 900, height = 1400, fps = 5 * speed, res = 300, nframes = 10)
   
   # Write the concat file
   writeLines(c(
@@ -333,3 +332,4 @@ animate_occurrences_over_time <- function(
   
   cat("✅ Successfully created:", final_output, "\n")
 }
+

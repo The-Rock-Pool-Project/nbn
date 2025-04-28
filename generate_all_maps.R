@@ -53,34 +53,25 @@ for (i in seq_len(nrow(species_list))) {
   dev.off()
   cat("✅ Static map saved to", static_path, "\n")
   
-  # ANIMATED MAP - GIF
-  gif_path <- file.path("outputs/animated", paste0(file_base, ".gif"))
-  animate_occurrences_over_time(occ,
-                                species_name = sci_name,
-                                filename = gif_path,
-                                format = "gif",
-                                speed = 1,
-                                point_colour = "#DA3737",
-                                point_size = 4.5,
-                                old_point_colour = "#0E6BFF")
-  
+
   # ANIMATED MAP - MP4
-  mp4_path <- file.path("outputs/animated", paste0(file_base, ".mp4"))
   animate_occurrences_over_time(occ,
                                 species_name = sci_name,
-                                filename = mp4_path,
                                 format = "mp4",
                                 speed = 1,
-                                point_colour = "#DA3737",
-                                point_size = 4.5,
-                                old_point_colour = "#0E6BFF")
-}
+                                point_size = 4.5)
+
+  #move and rename video file
+  
+  new_path <- paste0("outputs/animated/", gsub(" ","_",sci_name), ".mp4")
+  file.rename(paste0(gsub(" ","_",sci_name), "_final.mp4"),new_path)
+  
+  cat("✅ Animated map saved to", static_path, "\n")
+
+  
+  }
 
 
-# ✅ 1. Ensure you're working with the correct object
-# You define `records_per_year` and mutate it, but then pivot `records_per_year1` (possibly a typo)
-
-# FIX: Ensure you're using the correct dataframe name throughout
 records_per_year <- records_per_year %>%
   mutate(year = as.integer(`Start date year`))
 
@@ -148,3 +139,4 @@ names(allres_tab)[1:4] <- c("species_name",	"Total_records",	"First_year",	"Last
 # Save output
 write_csv(allres_tab, "outputs/records_per_species_year.csv")
 cat("📊 Complete summary saved to outputs/records_per_species_year.csv\n")
+
