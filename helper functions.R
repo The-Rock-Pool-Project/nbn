@@ -198,69 +198,62 @@ plot_occurrences_map <- function(
 animate_occurrences_over_time <- function(
     data,
     species_name = NULL,
-    filename = "species_animation.gif",
-    format = "gif",  # "gif" or "mp4"
+    filename = "species_animation",
+    format = "mp4",  # "gif" or "mp4"
     speed = 1,
     point_colour = "dodgerblue3",
     point_size = 2.8,
-    old_point_colour = "grey30",
-    pause_at_end = TRUE
+    old_point_colour = "grey30"
 ) {
-  require(ggplot2)
-  require(gganimate)
-  require(gifski)
-  require(av)
-  require(rnaturalearth)
-  require(rnaturalearthdata)
-  require(sf)
-  require(dplyr)
-  require(magick)
-  require(stringr)
+  # Libraries (ideally already loaded globally)
+  library(ggplot2)
+  library(gganimate)
+  library(dplyr)
+  library(rnaturalearth)
+  library(sf)
+  library(stringr)
+  library(png)
+  library(grid)
   
-  # 🧠 Rename fields for consistency
+  # Prepare data
   data <- data %>%
     rename(
       decimalLatitude = `Latitude (WGS84)`,
       decimalLongitude = `Longitude (WGS84)`,
       year = `Start date year`
-    )
-  
-  # ✅ Filter valid presence data
-  map_data <- data %>%
+    ) %>%
     filter(is.na(`Occurrence status`) | tolower(`Occurrence status`) != "absent") %>%
     filter(!is.na(decimalLatitude), !is.na(decimalLongitude), !is.na(year)) %>%
     mutate(year = as.numeric(year)) %>%
     arrange(year) %>%
     mutate(point_id = row_number())
   
-  # 🗺️ UK map
   uk <- rnaturalearth::ne_countries(scale = "medium", country = "United Kingdom", returnclass = "sf")
   
-  # 📊 Compute running total
-  frame_data <- map_data %>%
+  # Compute running total
+  frame_data <- data %>%
     count(year, name = "records") %>%
     arrange(year) %>%
-    mutate(
-      running_total = cumsum(records),
-      frame_label = paste0("Year: ", year, "   •   Total records: ", running_total)
-    )
+    mutate(running_total = cumsum(records),
+           frame_label = paste0("Year: ", year, " • Total: ", running_total))
   
-  # Join labels back
-  map_data <- left_join(map_data, frame_data[, c("year", "frame_label")], by = "year")
+  map_data <- left_join(data, frame_data[, c("year", "frame_label")], by = "year")
   
-  # ⏸️ Optional pause at end
-  if (pause_at_end) {
-    final_label <- tail(unique(map_data$frame_label), 1)
-    map_data <- bind_rows(
-      map_data,
-      map_data %>% filter(frame_label == final_label) %>% slice(rep(1:n(), 10))
-    )
-  }
+  # File paths
+  file_base <- str_replace_all(species_name, " ", "_")
+  anim1_path <- paste0(file_base, "_anim1.", format)
+  anim2_path <- paste0(file_base, "_anim2.", format)
+  final_output <- paste0(file_base, "_final.", format)
+  file_list_txt <- paste0(file_base, "_filelist.txt")
   
-  # 🧭 Build plot
-  p <- ggplot() +
+  # Create year-by-year animation
+  p1 <- ggplot() +
     geom_sf(data = uk, fill = "grey90", colour = "black") +
-    shadow_mark(alpha = 0.3, size = point_size * 0.7, colour = old_point_colour) +
+    annotation_custom(
+      rasterGrob(png::readPNG("TRPP.png"), interpolate = TRUE),
+      xmin = -15, xmax = Inf, ymin = 60, ymax = 61.5
+    ) +
+    shadow_mark(past = TRUE, future = FALSE, alpha = 1, size = point_size * 0.7, colour = old_point_colour) +
     geom_point(
       data = map_data,
       aes(x = decimalLongitude, y = decimalLatitude, group = point_id),
@@ -268,45 +261,75 @@ animate_occurrences_over_time <- function(
     ) +
     coord_sf(xlim = c(-11, 2), ylim = c(49.5, 61), expand = FALSE) +
     labs(
-      title = paste0("Spread of", if (!is.null(species_name)) paste0(" ", species_name)),
+      title = paste0("Spread of ", species_name),
       subtitle = "{closest_state}",
       x = NULL, y = NULL
     ) +
     theme_minimal(base_size = 14, base_family = "mont") +
     theme(
-      axis.title = element_blank(),
+      plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(size = 18, hjust = 0.5),
       axis.text = element_text(size = 10),
-      plot.margin = margin(20, 20, 40, 20)
+      plot.title.position = "plot",
+      plot.caption = element_text(hjust = 0.5, size = 12, margin = margin(t = 10))
     ) +
+    labs(caption = "Data source: NBN Atlas") +
     transition_states(states = frame_label, transition_length = 1, state_length = 2) +
-    ease_aes('linear')
+    view_follow(fixed_x = TRUE, fixed_y = TRUE)
   
-  # 🎬 Animation settings
-  nframes <- length(unique(map_data$frame_label)) * 10
-  fps <- 10 * speed
-  filename <- str_replace(filename, "\\.gif$|\\.mp4$", paste0(".", format))
-  renderer <- if (format == "mp4") av_renderer(filename) else gifski_renderer()
+  animate(p1, renderer = av_renderer(anim1_path), width = 900, height = 1400, fps = 2 * speed, res = 200)
   
-  # 🔄 Animate
-  anim <- animate(p, renderer = renderer, width = 900, height = 700, fps = fps, nframes = nframes)
+  # Create final map frame
+  final_data <- map_data
+  final_data$frame_label <- paste0("Current total records: ", nrow(map_data))
   
-  if (format == "gif") {
-    anim_save(filename, animation = anim)
-    
-    # 🖼️ Add logo for GIFs
-    if (file.exists("rock_pool_logo.png")) {
-      gif <- magick::image_read(filename)
-      logo <- magick::image_read("rock_pool_logo.png") %>%
-        magick::image_scale("150")
-      gif_with_logo <- magick::image_apply(gif, function(frame) {
-        magick::image_composite(frame, logo, offset = "+730+500")
-      })
-      magick::image_write(gif_with_logo, path = filename)
-      cat("✅ Logo added to animation\n")
-    } else {
-      cat("⚠️ Logo file not found: 'rock_pool_logo.png'\n")
-    }
-  }
+  p2 <- ggplot() +
+    geom_sf(data = uk, fill = "grey90", colour = "black") +
+    annotation_custom(
+      rasterGrob(png::readPNG("TRPP.png"), interpolate = TRUE),
+      xmin = -15, xmax = Inf, ymin = 60, ymax = 61.5
+    ) +
+    geom_point(
+      data = final_data,
+      aes(x = decimalLongitude, y = decimalLatitude, group = point_id),
+      colour = old_point_colour, alpha = 0.9, size = point_size
+    ) +
+    coord_sf(xlim = c(-11, 2), ylim = c(49.5, 61), expand = FALSE) +
+    labs(
+      title = paste0("Spread of ", species_name),
+      subtitle = "{closest_state}",
+      x = NULL, y = NULL
+    ) +
+    theme_minimal(base_size = 14, base_family = "mont") +
+    theme(
+      plot.title = element_text(size = 24, hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(size = 18, hjust = 0.5),
+      axis.text = element_text(size = 10),
+      plot.title.position = "plot",
+      plot.caption = element_text(hjust = 0.5, size = 12, margin = margin(t = 10))
+    ) +
+    labs(caption = "Data source: NBN Atlas") +
+    transition_states(states = frame_label, transition_length = 0, state_length = 20) +  # <-- longer pause
+    view_follow(fixed_x = TRUE, fixed_y = TRUE)
   
-  cat("✅ Animation saved as:", filename, "with speed =", speed, "\n")
+  animate(p2, renderer = av_renderer(anim2_path), width = 900, height = 1400, fps = 5 * speed, res = 200, nframes = 10)
+  
+  # Write the concat file
+  writeLines(c(
+    paste0("file '", anim2_path, "'"),
+    paste0("file '", anim1_path, "'")
+  ), file_list_txt)
+  
+  # Run ffmpeg to merge
+  system2("ffmpeg", args = c(
+    "-y", "-f", "concat", "-safe", "0",
+    "-i", file_list_txt,
+    "-c", "copy",
+    final_output
+  ))
+  
+  # Clean up
+  unlink(c(anim1_path, anim2_path, file_list_txt))
+  
+  cat("✅ Successfully created:", final_output, "\n")
 }
