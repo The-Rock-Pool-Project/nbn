@@ -155,22 +155,33 @@ server <- function(input, output, session) {
     
     if (input$map_type == "static") {
       static_url <- file.path("static_maps", paste0(file_base, ".png"))
-      tags$img(src = static_url, width = "100%",
-               style = "border: 1px solid #ccc; border-radius: 6px;")
+      tags$img(
+        src = static_url,
+        width = "100%",
+        style = "border: 1px solid #ccc; border-radius: 6px;"
+      )
     } else {
       mp4_url <- file.path("animated_maps", paste0(file_base, ".mp4"))
-      tags$video(
-        src = mp4_url,
-        type = "video/mp4",
-        width = "100%",
-        height = "500px",
-        controls = NA,
-        autoplay = NA,
-        loop = NA,
-        style = "border: 1px solid #ccc; border-radius: 6px;"
+      tags$div(
+        tags$video(
+          id = "species_video",
+          src = mp4_url,
+          type = "video/mp4",
+          width = "100%",
+          height = "500px",
+          controls = NA,
+          style = "border: 1px solid #ccc; border-radius: 6px;"
+        ),
+        tags$script(HTML("
+        var vid = document.getElementById('species_video');
+        vid.onended = function() {
+          vid.currentTime = 0;
+        };
+      "))
       )
     }
   })
+  
   
   
   output$download_static <- downloadHandler(
