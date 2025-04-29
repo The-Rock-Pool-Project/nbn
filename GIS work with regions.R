@@ -46,15 +46,29 @@ nbn_points <- nbn_data %>%
 # 4. Spatial join: points -> regions
 joined <- st_join(nbn_points, regions_sf, join = st_intersects, left = FALSE)
 
-# 5. Summarise: species counts per region
-species_region_summary <- joined %>%
-  group_by(region_name, species_name) %>%  # assuming 'Name' is your region name field
-  summarise(n_records = n(), .groups = "drop") %>%
-  arrange(region_name, desc(n_records))
 
-# 6. View result
-print(species_region_summary)
+# 5. Summarise: species counts per region
+
+all_species <- rep(0, length(unique(joined$`Scientific name`)))
+names(all_species) <- sort(unique(joined$`Scientific name`))
+
+all_res <- list()
+
+for (region in unique(joined$region_name)) {
+  
+  temp_recs <- all_species
+  
+  region_recs <- table(subset(joined, region_name == region)$`Scientific name`)
+  
+  temp_recs[names(region_recs)] <- region_recs
+  
+  all_res[[region]] <- temp_recs
+}
+
+all_region_recs <- do.call("rbind", all_res)
+all_region_recs <- as.data.frame(cbind(rownames(all_region_recs), all_region_recs))
+names(all_region_recs)[1] <- "Region" 
 
 # 7. Save if you want
-write_csv(species_region_summary, "outputs/species_counts_by_region.csv")
+write_csv(all_region_recs, "outputs/all_region_recs.csv")
 
