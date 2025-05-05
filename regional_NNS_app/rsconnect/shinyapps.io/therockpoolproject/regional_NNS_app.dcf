@@ -1,0 +1,12 @@
+name: regional_NNS_app
+title: regional_NNS_app
+username: therockpoolproject
+account: therockpoolproject
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14685110
+bundleId:
+url: https://therockpoolproject.shinyapps.io/regional_NNS_app/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
